@@ -11,35 +11,53 @@ resource "aws_s3_bucket" "b" {
 resource "aws_s3_bucket_public_access_block" "bucket-block" {
   bucket = aws_s3_bucket.b.id
 
-  block_public_acls         = true
-  block_public_policy       = true
-  ignore_public_acls        = true
-  restrict_public_buckets   = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-resource "aws_iam_user" "user" {
-  name = "zype-ro"
+resource "aws_iam_role" "role" {
+  name = "s3-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }
 
-resource "aws_iam_access_key" "user-ro" {
-  user = aws_iam_user.user.name
-}
+resource "aws_iam_policy" "policy" {
+  name        = "s3-read-policy"
+  description = "Read policy for s3-role"
 
-resource "aws_iam_user_policy" "user_ro" {
-  name = "zype-s3-user"
-  user = aws_iam_user.user.name
   policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Action": [
-        "s3:*"
+        "s3:GetObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::s3-bucket-zype/*"
+      "Resource": "*"
     }
   ]
 }
 EOF
+}
+
+resource "aws_iam_role_policy_attachment" "role-attach" {
+  role       = aws_iam_role.role.name
+  policy_arn = aws_iam_policy.policy.arn
 }
