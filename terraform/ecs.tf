@@ -2,7 +2,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   name = "zype-cluster"
 }
 
-resource "aws_cloudwatch_log_group" "zype_api_log" {
+resource "aws_cloudwatch_log_group" "log_group" {
   name = "ZypeApiLog"
 
   tags = {
@@ -17,7 +17,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
   [
     {
       "name": "zype-api",
-      "image": "gaspo53/poc:latest",
+      "image": "docker.io/gaspo53/poc:latest",
       "essential": true,
       "portMappings": [
         {
@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "zype_api_log",
+          "awslogs-group": "${aws_cloudwatch_log_group.log_group.name}",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
