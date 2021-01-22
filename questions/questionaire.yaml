@@ -12,7 +12,7 @@ questions:
        In order to mitigate it, SSL should be enabled end-to-end between all components of the stack.
        Another reason of leaking can be on logs: the application might be logging debug information from a secret,
        and attackers can get theirs hands on the logs. To prevent that, instead of logging to files, the container can be configured to push
-       logs directly to logstash (using sysylog driver), over TCP/TLS.
+       logs directly to logstash (using sysylog driver), over TLS.
 
 
   - q: >-
@@ -27,13 +27,13 @@ questions:
     a: >-
       In this configuration, there won't be a disk space issue since the service is configured to use CloudWatch.
       On a common scenario, where the container logs to stdout, and the orchestrator redirects the output to files on the host,
-      that could lead to a potential disk space issue. To mitigate that, we can configure rsyslogd/filebeats to scan directories, 
+      that could lead to a potential disk space issue. To mitigate that, we can configure rsyslogd/filebeat to scan directories, 
       push every new log to logstash or any other log aggregator, and configure a log rotation discarding old files.
 
   - q: >-
       How do you update this app with new versions?
     a: >-
-      Since this app doesn't use/updates any datasource, as could be a database, the update process requires only to stop current container(s),
+      Since this app doesn't use/updates any datasource, as could be a database, the update process requires only to stop current container,
       and create a new container using the new version of the image.
 
 
