@@ -1,7 +1,6 @@
 resource "aws_s3_bucket" "b" {
   bucket = "s3-bucket-zype"
   acl    = "private"
-
   tags = {
     Name        = "zype"
     Environment = "dev"

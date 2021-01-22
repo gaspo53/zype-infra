@@ -1,0 +1,45 @@
+questions:
+  - q: >-
+       Imagine that one of the requirements was to include a sensitive key for the application to use.
+       In what ways can you make sure that key is protected as much as reasonably possible?
+    a: >-
+      The first option will be to use AWS Secrets Manager, to retrieve any sensitive information, or any other secrets manager (i.e. Vault)
+
+  - q: >-
+       After taking the precautions in question 1, in what ways might the key still be at risk for leaking? (Be creative! We'd like to see how you might hack your own design.)
+    a: >-
+       If containers are located in a different network than the secret manager being used, a network sniffing attack can be attempted.
+       In order to mitigate it, SSL should be enabled end-to-end between all components of the stack.
+       Another reason of leaking can be on logs: the application might be logging debug information from a secret,
+       and attackers can get theirs hands on the logs. To prevent that, instead of logging to files, the container can be configured to push
+       logs directly to logstash (using sysylog driver), over TCP/TLS.
+
+
+  - q: >-
+      Does your solution protect against the app crashing unexpectedly? If not, what kinds of protections could be put into place?
+    a: >-
+      No, the provided solution is not fault tolerant. To workaround this from Docker perspective, we can start the container with
+      a restart policy set to always (--restart always). But if the application crashes frequentily, and the crash is not related to
+      docker/memory/disk, code must be reviewed in order to find the root cause.
+
+  - q: >-
+      Where does the app log its output? Do you need to take special steps to make sure logs don't fill up the disk?
+    a: >-
+      In this configuration, there won't be a disk space issue since the service is configured to use CloudWatch.
+      On a common scenario, where the container logs to stdout, and the orchestrator redirects the output to files on the host,
+      that could lead to a potential disk space issue. To mitigate that, we can configure rsyslogd/filebeats to scan directories, 
+      push every new log to logstash or any other log aggregator, and configure a log rotation discarding old files.
+
+  - q: >-
+      How do you update this app with new versions?
+    a: >-
+      Since this app doesn't use/updates any datasource, as could be a database, the update process requires only to stop current container(s),
+      and create a new container using the new version of the image.
+
+
+  - q: >-
+      How do you monitor this application? What metrics do you consider key to monitoring and alerting?
+    a:
+      Right now we have CloudWatch monitoring for the containers, but with no alerts configured; that could be a way of monitoring.
+      Another options include adding prometheus to the application, and configure Icinga with that as a check source; include the New Relic/AppDynamics agents,
+      Foglight, Nagios, etc.
